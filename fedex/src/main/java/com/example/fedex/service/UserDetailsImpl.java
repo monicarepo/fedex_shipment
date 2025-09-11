@@ -35,6 +35,8 @@ public class UserDetailsImpl implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
                 .collect(Collectors.toList());
 
+        System.out.println("Building UserDetails with authorities: " + authorities);
+
         return new UserDetailsImpl(
                 user.getId(),
                 user.getUsername(),
@@ -67,32 +69,12 @@ public class UserDetailsImpl implements UserDetails {
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
+    public boolean equals(Object object) {
+        if (this == object)
             return true;
-        if (o == null || getClass() != o.getClass())
+        if (object == null || getClass() != object.getClass())
             return false;
-        UserDetailsImpl user = (UserDetailsImpl) o;
+        UserDetailsImpl user = (UserDetailsImpl) object;
         return Objects.equals(id, user.id);
     }
 }

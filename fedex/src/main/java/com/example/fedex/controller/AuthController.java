@@ -46,23 +46,6 @@ public class AuthController {
     JwtUtils jwtUtils;
 
     @QueryMapping
-    public String publicContent() {
-        return "Public Content.";
-    }
-
-    @QueryMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public String userContent() {
-        return "User Content.";
-    }
-
-    @QueryMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public String adminContent() {
-        return "Admin Board.";
-    }
-
-    @QueryMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public UserResponse currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -137,17 +120,15 @@ public class AuthController {
         Set<Role> roles = new HashSet<>();
 
         if (graphQLRoles == null || graphQLRoles.isEmpty()) {
-            // FIXED: Use ERole.ROLE_USER instead of ERole.USER
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+            Role userRole = roleRepository.findByName(ERole.USER)
                     .orElseGet(() -> {
                         // Create the role if it doesn't exist
-                        Role newRole = new Role(ERole.ROLE_USER);
+                        Role newRole = new Role(ERole.USER);
                         return roleRepository.save(newRole);
                     });
             roles.add(userRole);
         } else {
             graphQLRoles.forEach(graphQLRole -> {
-                // FIXED: Make sure toERole() returns the correct ERole value
                 Role role = roleRepository.findByName(graphQLRole.toERole())
                         .orElseGet(() -> {
                             // Create the role if it doesn't exist
