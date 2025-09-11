@@ -1,6 +1,7 @@
 package com.example.fedex.service;
 
 import com.example.fedex.dto.ShippingDetailResponse;
+import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingDetails;
 import com.example.fedex.repository.ShippingDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +43,40 @@ public class ShippingService {
         entity.setFirstName(dto.getFirstName());
         entity.setLastName(dto.getLastName());
         entity.setFromName(dto.getFromName());
+        entity.setContactNumber(dto.getContactNumber());
         entity.setShippingAddress(dto.getShippingAddress());
         entity.setDeliveryMode(dto.getDeliveryMode());
         entity.setPrice(dto.getPrice());
+    }
+
+    public Optional<ShippingDetailResponse> updateShippingDetails(Long id, ShippingDetailResponse shippingDetailResponse) {
+        return shippingDetailsRepository.findById(id)
+                .map(existingDetails -> {
+                        mapToEntity(shippingDetailResponse, existingDetails);
+                        ShippingDetails updatedDetails = shippingDetailsRepository.save(existingDetails);
+                        return new ShippingDetailResponse(updatedDetails);
+                });
+    }
+
+    public boolean deleteShippingDetails(Long id) {
+        if (shippingDetailsRepository.existsById(id)) {
+            shippingDetailsRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
+    public List<ShippingDetailResponse> searchByFirstName(String firstName) {
+        return shippingDetailsRepository.findByFirstNameContainingIgnoreCase(firstName).stream()
+                .map(ShippingDetailResponse::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ShippingDetailResponse> getDeliveryMode(DeliveryMode deliveryMode) {
+        return shippingDetailsRepository.findByDeliveryMode(deliveryMode)
+                .stream()
+                .map(ShippingDetailResponse::new)
+                .collect(Collectors.toList());
     }
 
 }

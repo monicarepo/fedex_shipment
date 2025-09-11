@@ -57,13 +57,13 @@ public class ShippingDetails {
     }
 
     public ShippingDetails(String firstName, String lastName, String fromName, String contactNumber,
-                           String shipmentAddress, DeliveryMode deliveryMode, Double price) {
+                           String shippingAddress, DeliveryMode deliveryMode, Double price) {
         this();
         this.firstName = firstName;
         this.lastName = lastName;
         this.fromName = fromName;
         this.contactNumber = contactNumber;
-        this.shippingAddress = shipmentAddress;
+        this.shippingAddress = shippingAddress;
         this.deliveryMode = deliveryMode;
         this.price = price;
     }

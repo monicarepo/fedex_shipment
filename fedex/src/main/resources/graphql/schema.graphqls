@@ -19,6 +19,11 @@ type Query {
     currentUser: User!
     users: [User!]!
     roles: [Role!]!
+    allShippingDetails: [ShippingDetails!]!
+    shippingDetailsById(id: ID!): ShippingDetails
+    shippingDetailsByTrackingNumber(trackingNumber: String!): ShippingDetails
+    searchShippingByFirstName(firstName: String!): [ShippingDetails!]!
+    shippingByDeliveryMode(deliveryMode: DeliveryMode!): [ShippingDetails!]!
 }
 
 type Mutation {
@@ -26,6 +31,9 @@ type Mutation {
     signUp(input: SignUpInput!): String!
     updateUserRoles(id: ID!, roles: [Role!]!): User!
     deleteUser(id: ID!): Boolean!
+    createShippingDetails(input: ShippingInput!): ShippingDetails!
+    updateShippingDetails(id: ID!, input: ShippingInput!): ShippingDetails!
+    deleteShippingDetails(id: ID!): Boolean!
 }
 
 input SignInInput {
@@ -38,4 +46,36 @@ input SignUpInput {
     email: String!
     password: String!
     roles: [Role!]
+}
+
+type ShippingDetails {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    fromName: String!
+    contactNumber: String!
+    shippingAddress: String!
+    deliveryMode: DeliveryMode!
+    price: Float!
+    trackingNumber: String!
+    createdAt: String!
+    updatedAt: String!
+}
+
+input ShippingInput {
+    firstName: String!
+    lastName: String!
+    fromName: String!
+    contactNumber: String!
+    shippingAddress: String!
+    deliveryMode: DeliveryMode!
+    price: Float!
+}
+
+enum DeliveryMode {
+    STANDARD
+    EXPRESS
+    PRIORITY
+    SAME_DAY
+    INTERNATIONAL
 }

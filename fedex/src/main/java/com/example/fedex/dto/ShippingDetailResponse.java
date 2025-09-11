@@ -20,6 +20,8 @@ public class ShippingDetailResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    public ShippingDetailResponse() {}
+
     public ShippingDetailResponse(ShippingDetails shippingDetails) {
         this.id = shippingDetails.getId();
         this.firstName = shippingDetails.getFirstName();
