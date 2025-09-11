@@ -16,9 +16,6 @@ type AuthPayload {
 }
 
 type Query {
-    publicContent: String!
-    userContent: String!
-    adminContent: String!
     currentUser: User!
     users: [User!]!
     roles: [Role!]!

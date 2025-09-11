@@ -8,9 +8,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DE: test_db
-#      POSTGRES_DB: test_db
-#      POSTGRES_DE: test_db
+      POSTGRES_DB: test_db
     ports:
       - "5434:5432"
     healthcheck:
