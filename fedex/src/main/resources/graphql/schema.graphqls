@@ -56,32 +56,61 @@ type SignUpResponse {
 
 type ShippingDetails {
     id: ID!
-    firstName: String!
-    lastName: String!
-    fromName: String!
-    contactNumber: String!
-    shippingAddress: String!
+    senderFirstName: String!
+    senderLastName: String!
+    senderEmail: String!
+    senderContactNumber: String!
+    senderAddress: String!
+    receiverFirstName: String!
+    receiverLastName: String!
+    receiverEmail: String!
+    receiverContactNumber: String!
+    receiverAddress: String!
     deliveryMode: DeliveryMode!
     price: Float!
+    shippingStatus: ShippingStatus!
     trackingNumber: String!
     createdAt: String!
     updatedAt: String!
 }
 
 input ShippingInput {
-    firstName: String!
-    lastName: String!
-    fromName: String!
-    contactNumber: String!
-    shippingAddress: String!
+    senderFirstName: String!
+    senderLastName: String!
+    senderEmail: String!
+    senderContactNumber: String!
+    senderAddress: String!
+    receiverFirstName: String!
+    receiverLastName: String!
+    receiverEmail: String!
+    receiverContactNumber: String!
+    receiverAddress: String!
     deliveryMode: DeliveryMode!
     price: Float!
+    shippingStatus: ShippingStatus!
 }
 
 enum DeliveryMode {
-    STANDARD
-    EXPRESS
-    PRIORITY
-    SAME_DAY
-    INTERNATIONAL
+    EXPRESS,
+    STANDARD,
+    ECONOMY,
+    INTERNATIONAL,
+    SAME_DAY,
+    OVERNIGHT,
+    FREIGHT,
+    GROUND
+}
+
+enum ShippingStatus {
+    PENDING,
+    PICKED_UP,
+    IN_TRANSIT,
+    OUT_FOR_DELIVERY,
+    DELIVERED,
+    FAILED_DELIVERY,
+    RETURNED,
+    CANCELLED,
+    ON_HOLD,
+    CUSTOMS_CLEARANCE,
+    EXCEPTION
 }

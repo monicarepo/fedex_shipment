@@ -1,9 +1,12 @@
 package com.example.fedex.entity;
 
 public enum DeliveryMode {
-    STANDARD,
     EXPRESS,
-    PRIORITY,
+    STANDARD,
+    ECONOMY,
+    INTERNATIONAL,
     SAME_DAY,
-    INTERNATIONAL
+    OVERNIGHT,
+    FREIGHT,
+    GROUND
 }

@@ -40,12 +40,18 @@ public class ShippingService {
     }
 
     private void mapToEntity(ShippingDetailResponse dto, ShippingDetails entity) {
-        entity.setFirstName(dto.getFirstName());
-        entity.setLastName(dto.getLastName());
-        entity.setFromName(dto.getFromName());
-        entity.setContactNumber(dto.getContactNumber());
-        entity.setShippingAddress(dto.getShippingAddress());
+        entity.setSenderFirstName(dto.getSenderFirstName());
+        entity.setSenderLastName(dto.getSenderLastName());
+        entity.setSenderEmail(dto.getSenderEmail());
+        entity.setSenderContactNumber(dto.getSenderContactNumber());
+        entity.setSenderAddress(dto.getSenderAddress());
+        entity.setReceiverFirstName(dto.getReceiverFirstName());
+        entity.setReceiverLastName(dto.getReceiverLastName());
+        entity.setReceiverEmail(dto.getReceiverEmail());
+        entity.setReceiverContactNumber(dto.getReceiverContactNumber());
+        entity.setReceiverAddress(dto.getReceiverAddress());
         entity.setDeliveryMode(dto.getDeliveryMode());
+        entity.setShippingStatus(dto.getShippingStatus());
         entity.setPrice(dto.getPrice());
     }
 
@@ -64,12 +70,6 @@ public class ShippingService {
             return true;
         }
         return false;
-    }
-
-    public List<ShippingDetailResponse> searchByFirstName(String firstName) {
-        return shippingDetailsRepository.findByFirstNameContainingIgnoreCase(firstName).stream()
-                .map(ShippingDetailResponse::new)
-                .collect(Collectors.toList());
     }
 
     public List<ShippingDetailResponse> getDeliveryMode(DeliveryMode deliveryMode) {

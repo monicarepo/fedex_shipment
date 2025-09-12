@@ -12,8 +12,6 @@ import java.util.Optional;
 @Repository
 public interface ShippingDetailsRepository extends JpaRepository<ShippingDetails, Long> {
     Optional<ShippingDetails> findByTrackingNumber(String trackingNumber);
-    List<ShippingDetails> findByFirstNameContainingIgnoreCase(String firstName);
-    List<ShippingDetails> findByLastNameContainingIgnoreCase(String lastName);
     List<ShippingDetails> findByDeliveryMode(DeliveryMode deliveryMode);
     boolean existsByTrackingNumber(String trackingNumber);
 }

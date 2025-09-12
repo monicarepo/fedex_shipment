@@ -2,7 +2,7 @@ package com.example.fedex.controller;
 
 import com.example.fedex.dto.ShippingDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
-import com.example.fedex.repository.ShippingDetailsRepository;
+import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.service.ShippingService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +41,6 @@ public class ShippingController {
 
     @QueryMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public List<ShippingDetailResponse> searchShippingByFirstName(@Argument String firstName) {
-        return shippingService.searchByFirstName(firstName);
-    }
-
-    @QueryMapping
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public List<ShippingDetailResponse> shippingByDeliveryMode(@Argument DeliveryMode deliveryMode) {
         return shippingService.getDeliveryMode(deliveryMode);
     }
@@ -55,37 +49,54 @@ public class ShippingController {
     @PreAuthorize("hasRole('ADMIN')")
     public ShippingDetailResponse createShippingDetails(@Argument @Valid ShippingInput input) {
         ShippingDetailResponse dto = new ShippingDetailResponse();
-        dto.setFirstName(input.firstName);
-        dto.setLastName(input.lastName);
-        dto.setFromName(input.fromName);
-        dto.setContactNumber(input.contactNumber);
-        dto.setShippingAddress(input.shippingAddress);
+        dto.setSenderFirstName(input.senderFirstName);
+        dto.setSenderLastName(input.senderLastName);
+        dto.setSenderEmail(input.senderEmail);
+        dto.setSenderContactNumber(input.senderContactNumber);
+        dto.setSenderAddress(input.senderAddress);
+        dto.setReceiverFirstName(input.receiverFirstName);
+        dto.setReceiverLastName(input.receiverLastName);
+        dto.setReceiverEmail(input.receiverEmail);
+        dto.setReceiverContactNumber(input.receiverContactNumber);
+        dto.setReceiverAddress(input.receiverAddress);
         dto.setDeliveryMode(input.deliveryMode);
+        dto.setShippingStatus(input.shippingStatus);
         dto.setPrice(input.price);
         return shippingService.createShippingDetail(dto);
     }
 
-
     public record ShippingInput(
-        String firstName,
-        String lastName,
-        String fromName,
-        String contactNumber,
-        String shippingAddress,
+        String senderFirstName,
+        String senderLastName,
+        String senderEmail,
+        String senderContactNumber,
+        String senderAddress,
+        String receiverFirstName,
+        String receiverLastName,
+        String receiverEmail,
+        String receiverContactNumber,
+        String receiverAddress,
         DeliveryMode deliveryMode,
-        Double price
+        Double price,
+        ShippingStatus shippingStatus
     ) {}
 
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Optional<ShippingDetailResponse> updateShippingDetails(@Argument Long id, @Argument @Valid ShippingInput input) {
         ShippingDetailResponse dto = new ShippingDetailResponse();
-        dto.setFirstName(input.firstName);
-        dto.setLastName(input.lastName);
-        dto.setFromName(input.fromName);
-        dto.setContactNumber(input.contactNumber);
-        dto.setShippingAddress(input.shippingAddress);
+        dto.setSenderFirstName(input.senderFirstName);
+        dto.setSenderLastName(input.senderLastName);
+        dto.setSenderEmail(input.senderEmail);
+        dto.setSenderContactNumber(input.senderContactNumber);
+        dto.setSenderAddress(input.senderAddress);
+        dto.setReceiverFirstName(input.receiverFirstName);
+        dto.setReceiverLastName(input.receiverLastName);
+        dto.setReceiverEmail(input.receiverEmail);
+        dto.setReceiverContactNumber(input.receiverContactNumber);
+        dto.setReceiverAddress(input.receiverAddress);
         dto.setDeliveryMode(input.deliveryMode);
+        dto.setShippingStatus(input.shippingStatus);
         dto.setPrice(input.price);
         return shippingService.updateShippingDetails(id, dto);
     }
