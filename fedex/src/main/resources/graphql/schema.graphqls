@@ -28,7 +28,7 @@ type Query {
 
 type Mutation {
     signIn(input: SignInInput!): AuthPayload!
-    signUp(input: SignUpInput!): String!
+    signUp(input: SignUpInput!): SignUpResponse!
     updateUserRoles(id: ID!, roles: [Role!]!): User!
     deleteUser(id: ID!): Boolean!
     createShippingDetails(input: ShippingInput!): ShippingDetails!
@@ -46,6 +46,12 @@ input SignUpInput {
     email: String!
     password: String!
     roles: [Role!]
+}
+
+type SignUpResponse {
+    message: String
+    success: Boolean!
+    error: String
 }
 
 type ShippingDetails {

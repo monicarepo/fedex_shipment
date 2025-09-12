@@ -1,10 +1,7 @@
 package com.example.fedex.controller;
 
 import com.example.fedex.dto.UserResponse;
-import com.example.fedex.entity.ERole;
-import com.example.fedex.entity.GraphQLRole;
-import com.example.fedex.entity.Role;
-import com.example.fedex.entity.User;
+import com.example.fedex.entity.*;
 import com.example.fedex.repository.RoleRepository;
 import com.example.fedex.repository.UserRepository;
 import com.example.fedex.security.jwt.JwtUtils;
@@ -105,44 +102,49 @@ public class AuthController {
     }
 
     @MutationMapping
-    public String signUp(@Argument SignUpInput input) {
-        if (userRepository.existsByUsername(input.getUsername())) {
-            throw new RuntimeException("Error: Username is already taken!");
-        }
+    public SignUpResponse signUp(@Argument SignUpInput input) {
+        try {
+            if (userRepository.existsByEmail(input.getEmail())) {
+                return new SignUpResponse("Email '" + input.getEmail() + "' is already registered. Please use a different email address.");
+            }
 
-        if (userRepository.existsByEmail(input.getEmail())) {
-            throw new RuntimeException("Error: Email is already in use!");
-        }
+            if (userRepository.existsByUsername(input.getUsername())) {
+//                throw new RuntimeException("Error: Username is already taken!");
+                return new SignUpResponse("Username '" + input.getUsername() + "' is already taken. Please choose a different username.");
+            }
 
-        User user = new User(input.getUsername(), input.getEmail(), encoder.encode(input.getPassword()));
+            User user = new User(input.getUsername(), input.getEmail(), encoder.encode(input.getPassword()));
 
-        Set<GraphQLRole> graphQLRoles = input.getRoles();
-        Set<Role> roles = new HashSet<>();
+            Set<GraphQLRole> graphQLRoles = input.getRoles();
+            Set<Role> roles = new HashSet<>();
 
-        if (graphQLRoles == null || graphQLRoles.isEmpty()) {
-            Role userRole = roleRepository.findByName(ERole.USER)
-                    .orElseGet(() -> {
-                        // Create the role if it doesn't exist
-                        Role newRole = new Role(ERole.USER);
-                        return roleRepository.save(newRole);
-                    });
-            roles.add(userRole);
-        } else {
-            graphQLRoles.forEach(graphQLRole -> {
-                Role role = roleRepository.findByName(graphQLRole.toERole())
+            if (graphQLRoles == null || graphQLRoles.isEmpty()) {
+                Role userRole = roleRepository.findByName(ERole.USER)
                         .orElseGet(() -> {
                             // Create the role if it doesn't exist
-                            Role newRole = new Role(graphQLRole.toERole());
+                            Role newRole = new Role(ERole.USER);
                             return roleRepository.save(newRole);
                         });
-                roles.add(role);
-            });
+                roles.add(userRole);
+            } else {
+                graphQLRoles.forEach(graphQLRole -> {
+                    Role role = roleRepository.findByName(graphQLRole.toERole())
+                            .orElseGet(() -> {
+                                // Create the role if it doesn't exist
+                                Role newRole = new Role(graphQLRole.toERole());
+                                return roleRepository.save(newRole);
+                            });
+                    roles.add(role);
+                });
+            }
+
+            user.setRoles(roles);
+            userRepository.save(user);
+
+            return new SignUpResponse("User registered successfully!", true);
+        } catch (RuntimeException exception) {
+            return new SignUpResponse("An unexpected error occurred: " + exception.getMessage());
         }
-
-        user.setRoles(roles);
-        userRepository.save(user);
-
-        return "User registered successfully!";
     }
 
 @MutationMapping
