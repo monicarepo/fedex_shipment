@@ -6,6 +6,9 @@ import com.example.fedex.repository.RoleRepository;
 import com.example.fedex.repository.UserRepository;
 import com.example.fedex.security.jwt.JwtUtils;
 import com.example.fedex.service.UserDetailsImpl;
+import com.example.fedex.service.UserDetailsServiceImpl;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -42,14 +45,18 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    UserDetailsServiceImpl  userDetailsService;
+
     @QueryMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public UserResponse currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+//        User user = userRepository.findById(userDetails.getId())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userDetailsService.getUserById(userDetails.getId()).orElseThrow(() -> new RuntimeException("User not found"));
 
         return new UserResponse(
                 user.getId(),
@@ -88,7 +95,7 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        User user = userRepository.findById(userDetails.getId())
+        User user = userDetailsService.getUserById(userDetails.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserResponse userResponse = new UserResponse(
@@ -109,7 +116,6 @@ public class AuthController {
             }
 
             if (userRepository.existsByUsername(input.getUsername())) {
-//                throw new RuntimeException("Error: Username is already taken!");
                 return new SignUpResponse("Username '" + input.getUsername() + "' is already taken. Please choose a different username.");
             }
 
@@ -151,7 +157,7 @@ public class AuthController {
 @PreAuthorize("hasRole('ADMIN')")
 @Transactional
 public UserResponse updateUserRoles(@Argument Long id, @Argument List<GraphQLRole> roles) {
-    User user = userRepository.findById(id)
+    User user = userRepository.getUserById(id)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
     Set<Role> newRoles = new HashSet<>();
@@ -186,32 +192,25 @@ public UserResponse updateUserRoles(@Argument Long id, @Argument List<GraphQLRol
         return false;
     }
 
+    @Setter
+    @Getter
     public static class SignInInput {
         private String username;
         private String password;
 
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
     }
 
+    @Setter
+    @Getter
     public static class SignUpInput {
         private String username;
         private String email;
         private String password;
         private Set<GraphQLRole> roles;
 
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public Set<GraphQLRole> getRoles() { return roles; }
-        public void setRoles(Set<GraphQLRole> roles) { this.roles = roles; }
     }
 
+    @Getter
     public static class AuthPayload {
         private String token;
         private UserResponse user;
@@ -221,7 +220,5 @@ public UserResponse updateUserRoles(@Argument Long id, @Argument List<GraphQLRol
             this.user = user;
         }
 
-        public String getToken() { return token; }
-        public UserResponse getUser() { return user; }
     }
 }
