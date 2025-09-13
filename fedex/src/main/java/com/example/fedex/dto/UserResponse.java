@@ -1,12 +1,18 @@
 package com.example.fedex.dto;
 
 import com.example.fedex.entity.GraphQLRole;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Set;
 
 @Data
-public class UserResponse {
+@NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class UserResponse implements Serializable {
     private Long id;
     private String username;
     private String email;

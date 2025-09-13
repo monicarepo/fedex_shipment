@@ -3,7 +3,6 @@ package com.example.fedex.controller;
 import com.example.fedex.dto.UserResponse;
 import com.example.fedex.entity.*;
 import com.example.fedex.repository.RoleRepository;
-import com.example.fedex.repository.UserRepository;
 import com.example.fedex.security.jwt.JwtUtils;
 import com.example.fedex.service.UserDetailsImpl;
 import com.example.fedex.service.UserDetailsServiceImpl;
@@ -25,16 +24,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Controller
 public class AuthController {
 
     @Autowired
     AuthenticationManager authenticationManager;
-
-    @Autowired
-    UserRepository userRepository;
 
     @Autowired
     RoleRepository roleRepository;
@@ -53,30 +48,14 @@ public class AuthController {
     public UserResponse currentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-//        User user = userRepository.findById(userDetails.getId())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-        User user = userDetailsService.getUserById(userDetails.getId()).orElseThrow(() -> new RuntimeException("User not found"));
-
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getGraphQLRoles()
-        );
+        UserResponse user = userDetailsService.getUserById(userDetails.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+        return user;
     }
 
     @QueryMapping
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> users() {
-        return userRepository.findAll().stream()
-                .map(user -> new UserResponse(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getGraphQLRoles()
-                ))
-                .collect(Collectors.toList());
+        return userDetailsService.getAllUsers();
     }
 
     @QueryMapping
@@ -95,27 +74,20 @@ public class AuthController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        User user = userDetailsService.getUserById(userDetails.getId())
+        UserResponse user = userDetailsService.getUserById(userDetails.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        UserResponse userResponse = new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getGraphQLRoles()
-        );
-
-        return new AuthPayload(jwt, userResponse);
+        return new AuthPayload(jwt, user);
     }
 
     @MutationMapping
     public SignUpResponse signUp(@Argument SignUpInput input) {
         try {
-            if (userRepository.existsByEmail(input.getEmail())) {
+            if (userDetailsService.existsByEmail(input.getEmail())) {
                 return new SignUpResponse("Email '" + input.getEmail() + "' is already registered. Please use a different email address.");
             }
 
-            if (userRepository.existsByUsername(input.getUsername())) {
+            if (userDetailsService.existsByUsername(input.getUsername())) {
                 return new SignUpResponse("Username '" + input.getUsername() + "' is already taken. Please choose a different username.");
             }
 
@@ -145,7 +117,7 @@ public class AuthController {
             }
 
             user.setRoles(roles);
-            userRepository.save(user);
+            userDetailsService.save(user);
 
             return new SignUpResponse("User registered successfully!", true);
         } catch (RuntimeException exception) {
@@ -157,36 +129,14 @@ public class AuthController {
 @PreAuthorize("hasRole('ADMIN')")
 @Transactional
 public UserResponse updateUserRoles(@Argument Long id, @Argument List<GraphQLRole> roles) {
-    User user = userRepository.getUserById(id)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-
-    Set<Role> newRoles = new HashSet<>();
-    roles.forEach(graphQLRole -> {
-        Role role = roleRepository.findByName(graphQLRole.toERole())
-                .orElseGet(() -> {
-                    // Create the role if it doesn't exist
-                    Role newRole = new Role(graphQLRole.toERole());
-                    return roleRepository.save(newRole);
-                });
-        newRoles.add(role);
-    });
-
-    user.setRoles(newRoles);
-    User savedUser = userRepository.save(user);
-
-    return new UserResponse(
-            savedUser.getId(),
-            savedUser.getUsername(),
-            savedUser.getEmail(),
-            savedUser.getGraphQLRoles()
-    );
+       return userDetailsService.updateUserRole(id, roles);
 }
 
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Boolean deleteUser(@Argument Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
+        if (userDetailsService.existsById(id)) {
+            userDetailsService.deleteById(id);
             return true;
         }
         return false;
