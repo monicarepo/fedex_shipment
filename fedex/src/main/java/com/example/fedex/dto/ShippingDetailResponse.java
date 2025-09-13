@@ -3,6 +3,8 @@ package com.example.fedex.dto;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingDetails;
 import com.example.fedex.entity.ShippingStatus;
+import com.example.fedex.utility.DateFormats;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -25,7 +27,9 @@ public class ShippingDetailResponse {
     private ShippingStatus shippingStatus;
     private Double price;
     private String trackingNumber;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateFormats.ISO_DATE_TIME)
     private LocalDateTime createdAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateFormats.ISO_DATE_TIME)
     private LocalDateTime updatedAt;
 
     public ShippingDetailResponse() {}

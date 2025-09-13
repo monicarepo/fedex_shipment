@@ -5,6 +5,9 @@ import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingDetails;
 import com.example.fedex.repository.ShippingDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,22 +19,29 @@ public class ShippingService {
     @Autowired
     private ShippingDetailsRepository shippingDetailsRepository;
 
+    @Cacheable(value = "shippingDetails", key = "'all'")
     public List<ShippingDetailResponse> getAllShippingDetails() {
         return shippingDetailsRepository.findAll().stream()
                 .map(ShippingDetailResponse::new)
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "shippingDetails", key = "'id:' + #id")
     public Optional<ShippingDetailResponse> getShippingDetailById(Long id) {
         return shippingDetailsRepository.findById(id)
                 .map(ShippingDetailResponse::new);
     }
 
+    @Cacheable(value = "shippingDetails", key = "'tracking:' + #trackingNumber")
     public Optional<ShippingDetailResponse> getShippingDetailsByTrackingNumber(String trackingNumber) {
         return shippingDetailsRepository.findByTrackingNumber(trackingNumber)
                 .map(ShippingDetailResponse::new);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "shippingDetails", key = "'all'", beforeInvocation = true),
+        @CacheEvict(value = "shippingDetails", key = "'deliveryMode:*'", allEntries = true, beforeInvocation = true)
+    })
     public ShippingDetailResponse createShippingDetail(ShippingDetailResponse shippingDetailsResponse) {
         ShippingDetails shippingDetail = new ShippingDetails();
         mapToEntity(shippingDetailsResponse, shippingDetail);
@@ -55,6 +65,11 @@ public class ShippingService {
         entity.setPrice(dto.getPrice());
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "shippingDetails", key = "'id:' + #id", beforeInvocation = true),
+        @CacheEvict(value = "shippingDetails", key = "'all'", beforeInvocation = true),
+        @CacheEvict(value = "shippingDetails", key = "'deliveryMode:*'", allEntries = true, beforeInvocation = true)
+    })
     public Optional<ShippingDetailResponse> updateShippingDetails(Long id, ShippingDetailResponse shippingDetailResponse) {
         return shippingDetailsRepository.findById(id)
                 .map(existingDetails -> {
@@ -64,6 +79,11 @@ public class ShippingService {
                 });
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "shippingDetails", key = "'id:' + #id", beforeInvocation = true),
+        @CacheEvict(value = "shippingDetails", key = "'all'", beforeInvocation = true),
+        @CacheEvict(value = "shippingDetails", key = "'deliveryMode:*'", allEntries = true, beforeInvocation = true)
+    })
     public boolean deleteShippingDetails(Long id) {
         if (shippingDetailsRepository.existsById(id)) {
             shippingDetailsRepository.deleteById(id);
@@ -72,6 +92,7 @@ public class ShippingService {
         return false;
     }
 
+    @Cacheable(value = "shippingDetails", key = "'deliveryMode:' + #deliveryMode")
     public List<ShippingDetailResponse> getDeliveryMode(DeliveryMode deliveryMode) {
         return shippingDetailsRepository.findByDeliveryMode(deliveryMode)
                 .stream()
