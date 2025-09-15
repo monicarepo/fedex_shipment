@@ -29,7 +29,7 @@ public class ShippingController {
 
     @QueryMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public Optional<ShippingDetailResponse> shippingDetailById(@Argument Long id) {
+    public Optional<ShippingDetailResponse> shippingDetailsById(@Argument Long id) {
         return shippingService.getShippingDetailById(id);
     }
 
