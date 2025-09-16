@@ -15,4 +15,12 @@ public class PlanCountry {
     private Integer pricingPlanId;
 
     private String countryCode;
+
+    public PlanCountry() {}
+
+    public PlanCountry(Integer planId, Integer pricingPlanId, String countryCode) {
+        this.planId = planId;
+        this.pricingPlanId = pricingPlanId;
+        this.countryCode = countryCode;
+    }
 }
