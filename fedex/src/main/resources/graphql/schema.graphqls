@@ -24,6 +24,11 @@ type Query {
     shippingDetailsByTrackingNumber(trackingNumber: String!): ShippingDetails
     searchShippingByFirstName(firstName: String!): [ShippingDetails!]!
     shippingByDeliveryMode(deliveryMode: DeliveryMode!): [ShippingDetails!]!
+
+    # Shipment Details Given Formate
+    allPricePlanDetails: [PricePlanResponse]!
+    getPricePlanDetailById: PricePlanResponse
+
 }
 
 type Mutation {
@@ -34,6 +39,40 @@ type Mutation {
     createShippingDetails(input: ShippingInput!): ShippingDetails!
     updateShippingDetails(id: ID!, input: ShippingInput!): ShippingDetails!
     deleteShippingDetails(id: ID!): Boolean!
+
+#    Shipment Details Given Formate
+    createPlanPriceDetails(input: PricePlanInput!): PricePlanResponse!
+    updatePricePlanDetails(input: PricePlanInput!): PricePlanResponse!
+    deletePricePlanDetails(id: Int!): Boolean!
+}
+
+input PricePlanInput {
+    planId: Int!,
+    pricingPlanId: Int!,
+    detailId: Int!,
+    fromWeight: String!,
+    toWeight: String!,
+    price: Float!
+}
+
+type PricePlanResponse {
+    planId: Int!,
+    pricingPlanId: Int!,
+    detailId: Int!,
+    fromWeight: String!,
+    toWeight: String!,
+    price: Float!
+}
+
+input PlanCountry {
+    pricingPlanId: Int!
+    countryCode:String!
+}
+
+type PricePlanCountry {
+    Plan_id:Int!
+    PricingPlanId:Int!
+    CountryCode:String!
 }
 
 input SignInInput {

@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "shipping-details")
+@Table(name = "shipping_details")
 public class ShippingDetails {
 
     @Id
@@ -27,7 +27,7 @@ public class ShippingDetails {
     @Size(max = 50)
     private String senderLastName;
 
-    @NotBlank(message = "From name is required")
+    @NotBlank(message = "Email is required")
     @Size(max = 50)
     private String senderEmail;
 
@@ -47,7 +47,7 @@ public class ShippingDetails {
     @Size(max = 50)
     private String receiverLastName;
 
-    @NotBlank(message = "From name is required")
+    @NotBlank(message = "Email is required")
     @Size(max = 50)
     private String receiverEmail;
 
