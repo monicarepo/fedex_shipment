@@ -45,6 +45,8 @@ type Mutation {
 
 #    Shipment Details Given Formate
     createShipmentDetail(input: ShipmentInput!): ShipmentDetailResponse!
+    updateShipmentDetail(id: Int, input: ShipmentInput): ShipmentDetailResponse!
+    deleteShipmentDetail(id: Int): Boolean!
 
     createPlanPriceDetails(input: PricePlanInput!): PricePlanResponse!
     updatePricePlanDetails(id: ID!, input: PricePlanInput!): PricePlanResponse!

@@ -42,6 +42,20 @@ public class ShipmentDetailsController {
         return shipmentDetailsService.getShipmentDetails(id).map(ShipmentDetailResponse::new);
     }
 
+    @MutationMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ShipmentDetailResponse updateShipmentDetail(@Argument Integer id, @Argument ShipmentInput input) {
+        ShipmentDetails updatedShipment = shipmentDetailsService.updateShipmentDetail(id, input);
+        return new ShipmentDetailResponse(updatedShipment);
+    }
+
+    @MutationMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public boolean deleteShipmentDetail(@Argument Integer id) {
+        return shipmentDetailsService.deleteShipmentDetails(id);
+    }
+
+
     public record ShipmentInput(
             UserInput userDetails,
             String weight,
