@@ -27,7 +27,7 @@ type Query {
 
     # Shipment Details Given Formate
     allPricePlanDetails: [PricePlanResponse]!
-    getPricePlanDetailById: PricePlanResponse
+    getPricePlanDetailById(id: ID!): PricePlanResponse
 
 }
 
@@ -42,12 +42,11 @@ type Mutation {
 
 #    Shipment Details Given Formate
     createPlanPriceDetails(input: PricePlanInput!): PricePlanResponse!
-    updatePricePlanDetails(input: PricePlanInput!): PricePlanResponse!
+    updatePricePlanDetails(id: ID!, input: PricePlanInput!): PricePlanResponse!
     deletePricePlanDetails(id: Int!): Boolean!
 }
 
 input PricePlanInput {
-    planId: Int!,
     pricingPlanId: Int!,
     detailId: Int!,
     fromWeight: String!,

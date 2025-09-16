@@ -21,21 +21,18 @@ public class PricePlanDetailService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<PlanPriceDetailResponse> getPricePlanDetailById(Integer planId) {
-        return pricePlanCountryRepository.findByPlanId(planId).map(PlanPriceDetailResponse::new);
+    public Optional<PlanPriceDetailResponse> getPricePlanDetailById(Integer id) {
+        return pricePlanCountryRepository.findByPlanId(id).map(PlanPriceDetailResponse::new);
     }
 
     public PlanPriceDetailResponse createPricePlan(PlanPriceDetailResponse planPriceDetailResponse) {
         PlanPriceDetails planPriceDetails = new PlanPriceDetails();
-        mapToEntity(planPriceDetailResponse, planPriceDetails, false);
+        mapToEntity(planPriceDetailResponse, planPriceDetails);
         PlanPriceDetails savedPlanPriceDetail = pricePlanCountryRepository.save(planPriceDetails);
         return new PlanPriceDetailResponse(savedPlanPriceDetail);
     }
 
-    private void mapToEntity(PlanPriceDetailResponse dto, PlanPriceDetails entity, boolean update) {
-        if (update) {
-            entity.setPlanId(dto.getPlanId());
-        }
+    private void mapToEntity(PlanPriceDetailResponse dto, PlanPriceDetails entity) {
         entity.setPricingPlanId(dto.getPricingPlanId());
         entity.setDetailId(dto.getDetailId());
         entity.setFromWeight(dto.getFromWeight());
@@ -45,7 +42,7 @@ public class PricePlanDetailService {
 
     public Optional<PlanPriceDetailResponse> updatePricePlan(Integer id, PlanPriceDetailResponse planPriceDetailResponse) {
         return pricePlanCountryRepository.findById(id).map( existPlan -> {
-            mapToEntity(planPriceDetailResponse, existPlan, true);
+            mapToEntity(planPriceDetailResponse, existPlan);
             PlanPriceDetails updatedPlanDetail = pricePlanCountryRepository.save(existPlan);
             return new PlanPriceDetailResponse(updatedPlanDetail);
         });

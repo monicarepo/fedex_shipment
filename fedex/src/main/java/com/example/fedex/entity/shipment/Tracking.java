@@ -11,7 +11,6 @@ public class Tracking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long labelId;
 
-    @Column(nullable = false)
     private Integer userId;
 
     private String trackingNumber;

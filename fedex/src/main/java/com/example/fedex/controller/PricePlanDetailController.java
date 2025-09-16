@@ -27,15 +27,14 @@ public class PricePlanDetailController {
 
     @QueryMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public Optional<PlanPriceDetailResponse> getPricePlanDetailById(@Argument Integer planId) {
-        return pricePlanDetailService.getPricePlanDetailById(planId);
+    public Optional<PlanPriceDetailResponse> getPricePlanDetailById(@Argument Integer id) {
+        return pricePlanDetailService.getPricePlanDetailById(id);
     }
 
     @MutationMapping
     @PreAuthorize("hasRole('ADMIN')")
     public PlanPriceDetailResponse createPlanPriceDetails(@Argument @Valid PricePlanInput input) {
         PlanPriceDetailResponse dto = new PlanPriceDetailResponse();
-        dto.setPlanId(input.planId);
         dto.setPricingPlanId(input.pricingPlanId);
         dto.setDetailId(input.detailId);
         dto.setFromWeight(input.fromWeight);
@@ -48,7 +47,6 @@ public class PricePlanDetailController {
     @PreAuthorize("hasRole('ADMIN')")
     public Optional<PlanPriceDetailResponse> updatePricePlanDetails(@Argument Integer id, @Argument @Valid PricePlanInput input) {
         PlanPriceDetailResponse dto = new PlanPriceDetailResponse();
-        dto.setPlanId(input.planId);
         dto.setPricingPlanId(input.pricingPlanId);
         dto.setDetailId(input.detailId);
         dto.setFromWeight(input.fromWeight);
@@ -64,7 +62,6 @@ public class PricePlanDetailController {
     }
 
     public record PricePlanInput(
-        Integer planId,
         Integer pricingPlanId,
         Integer detailId,
         String fromWeight,
