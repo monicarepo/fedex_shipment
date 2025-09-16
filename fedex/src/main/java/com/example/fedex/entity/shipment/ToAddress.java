@@ -22,6 +22,17 @@ public class ToAddress {
     private String zipcode;
 
     private Integer userId;
+
+    public ToAddress() {}
+
+    public ToAddress(String apt, String name, String city, String state, String zipcode, Integer userId) {
+        this.apt = apt;
+        this.name = name;
+        this.city = city;
+        this.state = state;
+        this.zipcode = zipcode;
+        this.userId = userId;
+    }
 }
 
 

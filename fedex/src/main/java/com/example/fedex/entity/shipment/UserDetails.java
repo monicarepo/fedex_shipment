@@ -18,5 +18,14 @@ public class UserDetails {
     private String lastName;
 
     private String sex;
+
+    public UserDetails() {}
+
+    public UserDetails(String firstName, String middleName, String lastName, String sex) {
+        this.firstName = firstName;
+        this.middleName = middleName;
+        this.lastName = lastName;
+        this.sex = sex;
+    }
 }
 

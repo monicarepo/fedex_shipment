@@ -42,5 +42,20 @@ public class ShipmentDetails {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contact_id", referencedColumnName = "contactId")
     private ContactInfo contactInfo;
+
+    public  ShipmentDetails() {}
+
+    public ShipmentDetails(UserDetails userDetails, String weight, String qty, FromAddress fromAddress, ToAddress toAddress, DeliveryMode modeOfDelivery, Double price, Tracking tracking, LabelCreation labelCreation, ContactInfo contactInfo) {
+        this.userDetails = userDetails;
+        this.weight = weight;
+        this.qty = qty;
+        this.fromAddress = fromAddress;
+        this.toAddress = toAddress;
+        this.modeOfDelivery = modeOfDelivery;
+        this.price = price;
+        this.tracking = tracking;
+        this.labelCreation = labelCreation;
+        this.contactInfo = contactInfo;
+    }
 }
 
