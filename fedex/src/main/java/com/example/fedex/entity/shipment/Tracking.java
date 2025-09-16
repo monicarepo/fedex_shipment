@@ -1,5 +1,6 @@
 package com.example.fedex.entity.shipment;
 
+import com.example.fedex.utility.Utils;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,7 +22,11 @@ public class Tracking {
 
     private java.sql.Date updatedDate;
 
-    public Tracking() {}
+    public Tracking() {
+        this.trackingNumber = Utils.generateTrackingNumber();
+        this.createdDate = new java.sql.Date(System.currentTimeMillis());
+        this.updatedDate = new java.sql.Date(System.currentTimeMillis());
+    }
 
     public Tracking(Integer userId, String trackingNumber, Date createdDate, Date updatedDate) {
         this.userId = userId;

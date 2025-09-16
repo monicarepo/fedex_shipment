@@ -1,8 +1,6 @@
 package com.example.fedex.entity.shipment;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.sql.Date;
@@ -12,6 +10,7 @@ import java.sql.Date;
 @Table(name = "members")
 public class Member {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer memberId;
 
     private String fullName;

@@ -15,7 +15,10 @@ public class LabelCreation {
     private java.sql.Date createdDate;
     private java.sql.Date updatedDate;
 
-    public LabelCreation() {}
+    public LabelCreation() {
+        this.createdDate = new java.sql.Date(System.currentTimeMillis());
+        this.updatedDate = new java.sql.Date(System.currentTimeMillis());
+    }
 
     public LabelCreation(Date createdDate, Date updatedDate) {
         this.createdDate = createdDate;

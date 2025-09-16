@@ -23,7 +23,10 @@ public class ContactInfo {
 
     private java.sql.Date updatedDate;
 
-    public  ContactInfo() {}
+    public  ContactInfo() {
+        this.createdDate = new java.sql.Date(System.currentTimeMillis());
+        this.updatedDate = new java.sql.Date(System.currentTimeMillis());
+    }
 
     public ContactInfo(Integer userId, String phoneNumber, String email, Date createdDate, Date updatedDate) {
         this.userId = userId;

@@ -1,6 +1,6 @@
-package com.example.fedex.entity;
+package com.example.fedex.entity.shipment;
 
-import com.example.fedex.entity.shipment.*;
+import com.example.fedex.entity.DeliveryMode;
 import jakarta.persistence.*;
 import lombok.Data;
 

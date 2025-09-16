@@ -26,6 +26,9 @@ type Query {
     shippingByDeliveryMode(deliveryMode: DeliveryMode!): [ShippingDetails!]!
 
     # Shipment Details Given Formate
+    getShipmentById(id: ID!): ShipmentDetailResponse
+    getAllShipments: [ShipmentDetailResponse]!
+
     allPricePlanDetails: [PricePlanResponse]!
     getPricePlanDetailById(id: ID!): PricePlanResponse
 
@@ -41,6 +44,8 @@ type Mutation {
     deleteShippingDetails(id: ID!): Boolean!
 
 #    Shipment Details Given Formate
+    createShipmentDetail(input: ShipmentInput!): ShipmentDetailResponse!
+
     createPlanPriceDetails(input: PricePlanInput!): PricePlanResponse!
     updatePricePlanDetails(id: ID!, input: PricePlanInput!): PricePlanResponse!
     deletePricePlanDetails(id: Int!): Boolean!
@@ -91,6 +96,119 @@ type SignUpResponse {
     success: Boolean!
     error: String
 }
+
+
+input UserInput {
+    firstName: String!
+    middleName: String
+    lastName: String!
+    sex: String!
+}
+
+input FromAddressInput {
+    userId: Int!
+    apt: String
+    name: String!
+    city: String!
+    state: String!
+    zipcode: String!
+}
+
+input ToAddressInput {
+    userId: Int!
+    apt: String
+    name: String!
+    city: String!
+    state: String!
+    zipcode: String!
+}
+
+input TrackingInput {
+    trackingNumber: String
+    status: String
+}
+
+input LabelCreationInput {
+    labelUrl: String
+    format: String
+}
+
+input ContactInfoInput {
+    userId: Int!
+    phoneNumber: String!
+    email: String!
+}
+
+input ShipmentInput {
+    userDetails: UserInput!
+    weight: String!
+    qty: String!
+    fromAddress: FromAddressInput!
+    toAddress: ToAddressInput!
+    modeOfDelivery: DeliveryMode!
+    price: Float
+    contactInfo: ContactInfoInput!
+}
+
+type UserDetailsType {
+    firstName: String!
+    middleName: String
+    lastName: String!
+    sex: String!
+}
+
+type FromAddressType {
+    userId: Int!
+    apt: String
+    name: String!
+    city: String!
+    state: String!
+    zipcode: String!
+}
+
+type ToAddressType {
+    userId: Int!
+    apt: String
+    name: String!
+    city: String!
+    state: String!
+    zipcode: String!
+}
+
+type TrackingType {
+    labelId: String
+    trackingNumber: String
+    createdDate: String
+    updatedDate: String
+}
+
+type LabelCreationType {
+    labelId: String
+    createdDate: String
+    updatedDate: String
+}
+
+type ContactInfoType {
+    userId: Int!
+    phoneNumber: String!
+    email: String!
+}
+
+type ShipmentDetailResponse {
+    shipmentId: ID!
+    userDetails: UserDetailsType!
+    weight: String!
+    qty: String!
+    fromAddress: FromAddressType!
+    toAddress: ToAddressType!
+    modeOfDelivery: DeliveryMode!
+    price: Float!
+    tracking: TrackingType
+    labelCreation: LabelCreationType
+    contactInfo: ContactInfoType!
+}
+
+
 
 type ShippingDetails {
     id: ID!

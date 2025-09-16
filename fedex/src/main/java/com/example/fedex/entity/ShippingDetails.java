@@ -1,5 +1,6 @@
 package com.example.fedex.entity;
 
+import com.example.fedex.utility.Utils;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -75,7 +76,7 @@ public class ShippingDetails {
     private LocalDateTime updatedAt;
 
     public ShippingDetails() {
-        this.trackingNumber = generateTrackingNumber();
+        this.trackingNumber = Utils.generateTrackingNumber();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -97,12 +98,6 @@ public class ShippingDetails {
         this.shippingStatus = shippingStatus;
     }
 
-    private String generateTrackingNumber() {
-        return UUID.randomUUID().toString()
-                .replace("-", "")
-                .substring(0, 16)
-                .toUpperCase();
-    }
 
     @PreUpdate
     public void preUpdate() {
