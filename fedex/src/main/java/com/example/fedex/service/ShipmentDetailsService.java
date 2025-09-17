@@ -1,6 +1,8 @@
 package com.example.fedex.service;
 
 import com.example.fedex.controller.ShipmentDetailsController;
+import com.example.fedex.entity.DeliveryMode;
+import com.example.fedex.entity.ShippingDetails;
 import com.example.fedex.entity.shipment.*;
 import com.example.fedex.repository.LabelCreationRepository;
 import com.example.fedex.repository.PricePlanDetailRepository;
@@ -10,8 +12,11 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +35,9 @@ public class ShipmentDetailsService {
 
     @Autowired
     private LabelCreationRepository labelCreationRepository;
+
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
 
     public ShipmentDetailsService(ShipmentDetailsRepository shipmentDetailsRepository, PricePlanDetailRepository planPriceDetailsRepository, UserDetailRepository userDetailRepository) {
         this.shipmentDetailsRepository = shipmentDetailsRepository;
@@ -105,7 +113,15 @@ public class ShipmentDetailsService {
 
         //Label Generation
         generateLabelAsync(savedShipmentDetails);
+
+        // Publish event instead of direct async call
+//        applicationEventPublisher.publishEvent(new ShipmentCreatedEvent(savedShipmentDetails));
         return savedShipmentDetails;
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void handleShipmentCreated(ShipmentCreatedEvent event) {
+        generateLabelAsync(event.getShipment());
     }
 
     @Async
@@ -114,6 +130,12 @@ public class ShipmentDetailsService {
             LabelCreation generatedLabel = labelGenerationService.generateAndSaveLabel(shipment);
             shipment.setLabelCreation(generatedLabel);
             shipmentDetailsRepository.save(shipment);
+
+//            LabelCreation existingLabel = shipment.getLabelCreation();
+//            existingLabel.setPdfContent(generatedLabel.getPdfContent());
+//            existingLabel.setFileName(generatedLabel.getFileName());
+//            labelCreationRepository.save(existingLabel);
+
         } catch (Exception e) {
             logger.error("Async label generation failed for shipment {}", shipment.getShipmentId(), e);
         }
@@ -198,9 +220,6 @@ public class ShipmentDetailsService {
         Tracking tracking = existingShipment.getTracking();
         tracking.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
 
-//        LabelCreation labelCreation = existingShipment.getLabelCreation();
-//        labelCreation.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
-
         existingShipment.setWeight(input.weight());
         existingShipment.setQty(input.qty());
         existingShipment.setModeOfDelivery(input.modeOfDelivery());
@@ -209,6 +228,69 @@ public class ShipmentDetailsService {
         generateLabelAsync(existingShipment);
 
         return shipmentDetailsRepository.save(existingShipment);
+    }
+
+//    Testing with static data
+    public void testGenerateLabelAsyncWithStaticData() {
+        try {
+            logger.info("Starting label generation test with static data...");
+            ShipmentDetails shipmentDetails = createStaticShipmentForTesting();
+            ShipmentDetails savedShipmentDetails = shipmentDetailsRepository.save(shipmentDetails);
+            logger.info("Test shipment created with ID: {}", savedShipmentDetails.getShipmentId());
+            generateLabelAsync(savedShipmentDetails);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ShipmentDetails createStaticShipmentForTesting() {
+        UserDetails userDetails = new UserDetails("Monica","Amalanathan","A","Female");
+        UserDetails savedUser = userDetailRepository.save(userDetails);
+
+        FromAddress fromAddress = new FromAddress(
+                Math.toIntExact(savedUser.getUserId()),
+                "Apt 101",
+                "John Doe",
+                "New York",
+                "NY",
+                "10001"
+        );
+
+        ToAddress toAddress = new ToAddress(
+                "Apt 202",
+                "Jane Smith",
+                "Los Angeles",
+                "CA",
+                "90001",
+                Math.toIntExact(savedUser.getUserId())
+        );
+
+        ContactInfo contactInfo = new ContactInfo(
+                Math.toIntExact(savedUser.getUserId()),
+                "123-456-7890",
+                "john.doe@email.com",
+                new java.sql.Date(System.currentTimeMillis()),
+                new java.sql.Date(System.currentTimeMillis())
+        );
+
+        Tracking tracking = new Tracking();
+        tracking.setUserId(Math.toIntExact(savedUser.getUserId()));
+
+        LabelCreation labelCreation = new LabelCreation();
+
+        return new ShipmentDetails(
+                userDetails,
+                "500g",
+                "2",
+                fromAddress,
+                toAddress,
+                DeliveryMode.EXPRESS,
+                25.99,
+                tracking,
+                labelCreation,
+                contactInfo
+        );
+
     }
 
 }

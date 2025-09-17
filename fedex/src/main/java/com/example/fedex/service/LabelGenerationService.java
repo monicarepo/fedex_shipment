@@ -8,13 +8,16 @@ import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.io.source.ByteArrayOutputStream;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
@@ -24,15 +27,26 @@ public class LabelGenerationService {
     @Autowired
     private LabelCreationRepository labelCreationRepository;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     private static final Logger logger = LoggerFactory.getLogger(LabelGenerationService.class);
 
     public LabelCreation generateAndSaveLabel(ShipmentDetails shipment) {
         try {
             byte[] pdfContent = generateShippingLabelPdf(shipment);
             String fileName = generateFileName(shipment);
-            logger.error("Label_generating and saving label for shipment {}", shipment.getShipmentId(), pdfContent);
+
+            logger.info("Generating label for shipment {}: {} bytes",
+                    shipment.getShipmentId(), pdfContent.length);
+
             LabelCreation labelCreation = new LabelCreation(pdfContent, fileName);
-            return labelCreationRepository.save(labelCreation);
+            LabelCreation savedLabel = labelCreationRepository.save(labelCreation);
+
+            Path filePath = fileStorageService.savePdfFile(pdfContent, fileName);
+            logger.info("Label saved to filesystem: {}", filePath.toAbsolutePath());
+
+            return savedLabel;
 
         } catch (Exception e) {
             logger.error("Error generating and saving label for shipment {}", shipment.getShipmentId(), e);
@@ -61,7 +75,7 @@ public class LabelGenerationService {
     }
 
     private String generateLabelHtml(ShipmentDetails shipment) {
-        return """
+        String html = """
         <!DOCTYPE html>
         <html>
         <head>
@@ -155,20 +169,29 @@ public class LabelGenerationService {
                 shipment.getPrice(),
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
         );
+//        saveHtmlForDebugging(html, Math.toIntExact(shipment.getShipmentId()));
+        return html;
     }
 
     private byte[] convertHtmlToPdf(String htmlContent) throws IOException {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         try (PdfWriter writer = new PdfWriter(outputStream);
-             PdfDocument pdf = new PdfDocument(writer);
-             Document document = new Document(pdf)) {
-
+             PdfDocument pdf = new PdfDocument(writer)) {
             ConverterProperties properties = new ConverterProperties();
-            HtmlConverter.convertToPdf(htmlContent, outputStream, properties);
+            HtmlConverter.convertToPdf(htmlContent, pdf, properties);
         }
-
         return outputStream.toByteArray();
+    }
+
+    private void saveHtmlForDebugging(String html, Integer shipmentId) {
+        try {
+            Path debugPath = Paths.get("debug-shipment-" + shipmentId + ".html");
+            Files.write(debugPath, html.getBytes(StandardCharsets.UTF_8));
+            logger.info("Debug HTML saved to: {}", debugPath.toAbsolutePath());
+        } catch (IOException e) {
+            logger.warn("Failed to save debug HTML: {}", e.getMessage());
+        }
     }
 
     public String generateFileName(ShipmentDetails shipment) {

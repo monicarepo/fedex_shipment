@@ -146,11 +146,6 @@ input TrackingInput {
     status: String
 }
 
-input LabelCreationInput {
-    labelUrl: String
-    format: String
-}
-
 input ContactInfoInput {
     userId: Int!
     phoneNumber: String!

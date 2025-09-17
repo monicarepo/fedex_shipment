@@ -25,6 +25,7 @@ public class LabelCreation {
     private java.sql.Date updatedDate;
 
     public LabelCreation() {
+        this.fileType = "pdf";
         this.createdDate = new java.sql.Date(System.currentTimeMillis());
         this.updatedDate = new java.sql.Date(System.currentTimeMillis());
     }
