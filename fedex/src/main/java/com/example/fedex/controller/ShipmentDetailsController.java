@@ -1,9 +1,9 @@
 package com.example.fedex.controller;
 
+import com.example.fedex.dto.LabelResponse;
 import com.example.fedex.dto.ShipmentDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.shipment.*;
-import com.example.fedex.service.PricePlanDetailService;
 import com.example.fedex.service.ShipmentDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -12,6 +12,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,6 +54,37 @@ public class ShipmentDetailsController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public boolean deleteShipmentDetail(@Argument Integer id) {
         return shipmentDetailsService.deleteShipmentDetails(id);
+    }
+
+    @QueryMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public LabelResponse generateShippingLabel(@Argument Integer shipmentId) {
+        try {
+            LabelCreation labelCreation = shipmentDetailsService.generateLabelForShipment(shipmentId);
+            return new LabelResponse(labelCreation);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating label: " + e.getMessage());
+        }
+    }
+
+    @QueryMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public LabelResponse getShippingLabel(@Argument Integer shipmentId) {
+        try {
+            ShipmentDetails shipment = shipmentDetailsService.getShipmentDetails(shipmentId)
+                    .orElseThrow(() -> new RuntimeException("Shipment not found"));
+
+            if (shipment.getLabelCreation() == null) {
+                throw new RuntimeException("No label found for this shipment");
+            }
+            LabelCreation labelCreation = shipmentDetailsService.getLabelWithContent(
+                    shipment.getLabelCreation().getLabelId()
+            );
+            return new LabelResponse(labelCreation);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving label: " + e.getMessage());
+        }
     }
 
 

@@ -2,19 +2,34 @@ package com.example.fedex.service;
 
 import com.example.fedex.controller.ShipmentDetailsController;
 import com.example.fedex.entity.shipment.*;
+import com.example.fedex.repository.LabelCreationRepository;
 import com.example.fedex.repository.PricePlanDetailRepository;
 import com.example.fedex.repository.ShipmentDetailsRepository;
 import com.example.fedex.repository.UserDetailRepository;
+import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional()
 public class ShipmentDetailsService {
     private final ShipmentDetailsRepository shipmentDetailsRepository;
     private final PricePlanDetailRepository planPriceDetailsRepository;
     private final UserDetailRepository userDetailRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(ShipmentDetailsService.class);
+
+    @Autowired
+    private LabelGenerationService labelGenerationService;
+
+    @Autowired
+    private LabelCreationRepository labelCreationRepository;
 
     public ShipmentDetailsService(ShipmentDetailsRepository shipmentDetailsRepository, PricePlanDetailRepository planPriceDetailsRepository, UserDetailRepository userDetailRepository) {
         this.shipmentDetailsRepository = shipmentDetailsRepository;
@@ -22,6 +37,7 @@ public class ShipmentDetailsService {
         this.userDetailRepository = userDetailRepository;
     }
 
+    @Transactional
     public ShipmentDetails createShipment(ShipmentDetailsController.ShipmentInput input) {
         int weightInGrams = Integer.parseInt(input.weight().replace("g", ""));
         int qty = Integer.parseInt(input.qty());
@@ -85,7 +101,26 @@ public class ShipmentDetailsService {
                 contactInfo
         );
 
-        return shipmentDetailsRepository.save(shipment);
+        ShipmentDetails savedShipmentDetails = shipmentDetailsRepository.save(shipment);
+
+        //Label Generation
+        generateLabelAsync(savedShipmentDetails);
+        return savedShipmentDetails;
+    }
+
+    @Async
+    public void generateLabelAsync(ShipmentDetails shipment) {
+        try {
+            LabelCreation generatedLabel = labelGenerationService.generateAndSaveLabel(shipment);
+            shipment.setLabelCreation(generatedLabel);
+            shipmentDetailsRepository.save(shipment);
+        } catch (Exception e) {
+            logger.error("Async label generation failed for shipment {}", shipment.getShipmentId(), e);
+        }
+    }
+
+    public LabelCreation generateAndSaveLabel(ShipmentDetails shipment) {
+        return labelGenerationService.generateAndSaveLabel(shipment);
     }
 
     public List<ShipmentDetails> getAllShipments() {
@@ -104,6 +139,24 @@ public class ShipmentDetailsService {
         return false;
     }
 
+    @Transactional
+    public LabelCreation generateLabelForShipment(Integer shipmentId) {
+        ShipmentDetails shipment = getShipmentDetails(shipmentId)
+                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + shipmentId));
+
+        LabelCreation generatedLabel = labelGenerationService.generateAndSaveLabel(shipment);
+        shipment.setLabelCreation(generatedLabel);
+        shipmentDetailsRepository.save(shipment);
+        return generatedLabel;
+    }
+
+    @Transactional()
+    public LabelCreation getLabelWithContent(Long labelId) {
+        return labelCreationRepository.findByIdWithContent(labelId)
+                .orElseThrow(() -> new RuntimeException("Label not found"));
+    }
+
+    @Transactional
     public ShipmentDetails updateShipmentDetail(Integer shipmentId, ShipmentDetailsController.ShipmentInput input) {
         ShipmentDetails existingShipment = shipmentDetailsRepository.findById(shipmentId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + shipmentId));
@@ -145,13 +198,15 @@ public class ShipmentDetailsService {
         Tracking tracking = existingShipment.getTracking();
         tracking.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
 
-        LabelCreation labelCreation = existingShipment.getLabelCreation();
-        labelCreation.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
+//        LabelCreation labelCreation = existingShipment.getLabelCreation();
+//        labelCreation.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
 
         existingShipment.setWeight(input.weight());
         existingShipment.setQty(input.qty());
         existingShipment.setModeOfDelivery(input.modeOfDelivery());
         existingShipment.setPrice(totalPrice);
+
+        generateLabelAsync(existingShipment);
 
         return shipmentDetailsRepository.save(existingShipment);
     }

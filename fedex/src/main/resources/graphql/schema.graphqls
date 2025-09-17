@@ -29,8 +29,13 @@ type Query {
     getShipmentById(id: ID!): ShipmentDetailResponse
     getAllShipments: [ShipmentDetailResponse]!
 
+    # PricePlan Details
     allPricePlanDetails: [PricePlanResponse]!
     getPricePlanDetailById(id: ID!): PricePlanResponse
+
+    #  Label Generation
+    generateShippingLabel(shipmentId: Int!): LabelResponse!
+    getShippingLabel(shipmentId: Int!): LabelResponse!
 
 }
 
@@ -52,6 +57,17 @@ type Mutation {
     updatePricePlanDetails(id: ID!, input: PricePlanInput!): PricePlanResponse!
     deletePricePlanDetails(id: Int!): Boolean!
 }
+
+type LabelResponse {
+    labelId: ID
+    pdfContent: String
+    fileName: String
+    fileType: String
+    fileSize: Int
+    createdDate: String
+    updatedDate: String
+}
+
 
 input PricePlanInput {
     pricingPlanId: Int!,
@@ -186,6 +202,10 @@ type TrackingType {
 
 type LabelCreationType {
     labelId: String
+    pdfContent: String
+    fileName: String
+    fileType: String
+    fileSize: Int
     createdDate: String
     updatedDate: String
 }

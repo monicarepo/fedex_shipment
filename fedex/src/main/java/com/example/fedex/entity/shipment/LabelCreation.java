@@ -12,6 +12,15 @@ public class LabelCreation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long labelId;
+
+    //Large Object type
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
+    private byte[] pdfContent;
+    private String fileName;
+    private String fileType;
+    private Long fileSize;
+
     private java.sql.Date createdDate;
     private java.sql.Date updatedDate;
 
@@ -20,8 +29,10 @@ public class LabelCreation {
         this.updatedDate = new java.sql.Date(System.currentTimeMillis());
     }
 
-    public LabelCreation(Date createdDate, Date updatedDate) {
-        this.createdDate = createdDate;
-        this.updatedDate = updatedDate;
+    public LabelCreation(byte[] pdfContent, String fileName) {
+        this();
+        this.pdfContent = pdfContent;
+        this.fileName = fileName;
+        this.fileSize = (long) pdfContent.length;
     }
 }

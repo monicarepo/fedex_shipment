@@ -1,0 +1,179 @@
+package com.example.fedex.service;
+
+import com.example.fedex.entity.shipment.LabelCreation;
+import com.example.fedex.entity.shipment.ShipmentDetails;
+import com.example.fedex.repository.LabelCreationRepository;
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.io.source.ByteArrayOutputStream;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Optional;
+
+@Service
+public class LabelGenerationService {
+    @Autowired
+    private LabelCreationRepository labelCreationRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(LabelGenerationService.class);
+
+    public LabelCreation generateAndSaveLabel(ShipmentDetails shipment) {
+        try {
+            byte[] pdfContent = generateShippingLabelPdf(shipment);
+            String fileName = generateFileName(shipment);
+            logger.error("Label_generating and saving label for shipment {}", shipment.getShipmentId(), pdfContent);
+            LabelCreation labelCreation = new LabelCreation(pdfContent, fileName);
+            return labelCreationRepository.save(labelCreation);
+
+        } catch (Exception e) {
+            logger.error("Error generating and saving label for shipment {}", shipment.getShipmentId(), e);
+            throw new RuntimeException("Failed to generate and save shipping label", e);
+        }
+    }
+
+    public byte[] getLabelPdfContent(Long labelId) {
+        LabelCreation labelCreation = labelCreationRepository.findById(labelId)
+                .orElseThrow(() -> new RuntimeException("Label not found with id: " + labelId));
+        return labelCreation.getPdfContent();
+    }
+
+    public Optional<LabelCreation> findLabelByFileName(String fileName) {
+        return labelCreationRepository.findByFileName(fileName);
+    }
+
+    public byte[] generateShippingLabelPdf(ShipmentDetails shipment) {
+        try {
+            String htmlContent = generateLabelHtml(shipment);
+            return convertHtmlToPdf(htmlContent);
+        } catch (Exception e) {
+            logger.error("Error generating label for shipment {}", shipment.getShipmentId(), e);
+            throw new RuntimeException("Failed to generate shipping label", e);
+        }
+    }
+
+    private String generateLabelHtml(ShipmentDetails shipment) {
+        return """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                .label {
+                    width: 4in;
+                    height: 6in;
+                    padding: 15px;
+                    border: 2px solid #000;
+                    font-family: Arial, sans-serif;
+                }
+                .header {
+                    text-align: center;
+                    border-bottom: 2px solid #000;
+                    margin-bottom: 15px;
+                    padding-bottom: 10px;
+                }
+                .section {
+                    margin: 10px 0;
+                    padding: 8px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                }
+                .barcode {
+                    font-family: 'Courier New', monospace;
+                    font-size: 20px;
+                    text-align: center;
+                    letter-spacing: 2px;
+                    margin: 10px 0;
+                }
+                .company-info {
+                    text-align: center;
+                    font-size: 12px;
+                    color: #666;
+                    margin-top: 15px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="label">
+                <div class="header">
+                    <h2>🚚 SHIPPING LABEL</h2>
+                    <div class="barcode">*%s*</div>
+                </div>
+                <div class="section">
+                    <strong>📦 FROM:</strong><br>
+                    %s<br>
+                    %s, %s<br>
+                    %s, %s
+                </div>
+                <div class="section">
+                    <strong>📮 TO:</strong><br>
+                    %s<br>
+                    %s, %s<br>
+                    %s, %s
+                </div>
+                <div class="section">
+                    <strong>📋 SHIPMENT DETAILS:</strong><br>
+                    📋 ID: %s<br>
+                    🎯 Tracking: %s<br>
+                    ⚖️ Weight: %s<br>
+                    📦 Quantity: %s<br>
+                    🚚 Service: %s<br>
+                    💰 Total: $%.2f
+                </div>
+                <div class="company-info">
+                    Generated by FedEx Shipping System<br>
+                    %s
+                </div>
+            </div>
+        </body>
+        </html>
+        """.formatted(
+                shipment.getTracking().getTrackingNumber(),
+                shipment.getFromAddress().getName(),
+                shipment.getFromAddress().getApt(),
+                shipment.getFromAddress().getCity(),
+                shipment.getFromAddress().getState(),
+                shipment.getFromAddress().getZipcode(),
+                shipment.getToAddress().getName(),
+                shipment.getToAddress().getApt(),
+                shipment.getToAddress().getCity(),
+                shipment.getToAddress().getState(),
+                shipment.getToAddress().getZipcode(),
+                shipment.getShipmentId(),
+                shipment.getTracking().getTrackingNumber(),
+                shipment.getWeight(),
+                shipment.getQty(),
+                shipment.getModeOfDelivery(),
+                shipment.getPrice(),
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+        );
+    }
+
+    private byte[] convertHtmlToPdf(String htmlContent) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        try (PdfWriter writer = new PdfWriter(outputStream);
+             PdfDocument pdf = new PdfDocument(writer);
+             Document document = new Document(pdf)) {
+
+            ConverterProperties properties = new ConverterProperties();
+            HtmlConverter.convertToPdf(htmlContent, outputStream, properties);
+        }
+
+        return outputStream.toByteArray();
+    }
+
+    public String generateFileName(ShipmentDetails shipment) {
+        return String.format("shipping-label-%s-%d.pdf",
+                shipment.getTracking().getTrackingNumber(),
+                System.currentTimeMillis());
+    }
+}
