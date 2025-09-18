@@ -40,13 +40,19 @@ public class LabelGenerationService {
             logger.info("Generating label for shipment {}: {} bytes",
                     shipment.getShipmentId(), pdfContent.length);
 
-            LabelCreation labelCreation = new LabelCreation(pdfContent, fileName);
-            LabelCreation savedLabel = labelCreationRepository.save(labelCreation);
+            LabelCreation existingLabel = shipment.getLabelCreation();
+            existingLabel.setPdfContent(pdfContent);
+            existingLabel.setFileName(fileName);
+            existingLabel.setFileSize((long) pdfContent.length);
+            existingLabel.setUpdatedDate(new java.sql.Date(System.currentTimeMillis()));
+
+//            LabelCreation labelCreation = new LabelCreation(pdfContent, fileName);
+//            LabelCreation savedLabel = labelCreationRepository.save(labelCreation);
 
             Path filePath = fileStorageService.savePdfFile(pdfContent, fileName);
             logger.info("Label saved to filesystem: {}", filePath.toAbsolutePath());
 
-            return savedLabel;
+            return existingLabel;
 
         } catch (Exception e) {
             logger.error("Error generating and saving label for shipment {}", shipment.getShipmentId(), e);

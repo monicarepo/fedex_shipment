@@ -3,6 +3,7 @@ package com.example.fedex.service;
 import com.example.fedex.controller.ShipmentDetailsController;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingDetails;
+import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.entity.shipment.*;
 import com.example.fedex.repository.LabelCreationRepository;
 import com.example.fedex.repository.PricePlanDetailRepository;
@@ -103,6 +104,7 @@ public class ShipmentDetailsService {
                 fromAddress,
                 toAddress,
                 input.modeOfDelivery(),
+                input.shippingStatus(),
                 totalPrice,
                 tracking,
                 labelCreation,
@@ -285,6 +287,7 @@ public class ShipmentDetailsService {
                 fromAddress,
                 toAddress,
                 DeliveryMode.EXPRESS,
+                ShippingStatus.PENDING,
                 25.99,
                 tracking,
                 labelCreation,

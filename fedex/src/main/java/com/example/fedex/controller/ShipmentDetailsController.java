@@ -3,6 +3,7 @@ package com.example.fedex.controller;
 import com.example.fedex.dto.LabelResponse;
 import com.example.fedex.dto.ShipmentDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
+import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.entity.shipment.*;
 import com.example.fedex.service.Producer;
 import com.example.fedex.service.ShipmentDetailsService;
@@ -105,6 +106,7 @@ public class ShipmentDetailsController {
             FromAddressInput fromAddress,
             ToAddressInput toAddress,
             DeliveryMode modeOfDelivery,
+            ShippingStatus shippingStatus,
             Double price,
             Tracking tracking,
             LabelCreation labelCreation,

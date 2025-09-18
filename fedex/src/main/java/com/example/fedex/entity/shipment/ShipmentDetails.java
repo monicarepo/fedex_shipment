@@ -1,6 +1,7 @@
 package com.example.fedex.entity.shipment;
 
 import com.example.fedex.entity.DeliveryMode;
+import com.example.fedex.entity.ShippingStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -29,6 +30,9 @@ public class ShipmentDetails {
 
     @Enumerated(EnumType.STRING)
     private DeliveryMode modeOfDelivery;
+
+    private ShippingStatus shippingStatus;
+
     private Double price;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -43,15 +47,18 @@ public class ShipmentDetails {
     @JoinColumn(name = "contact_id", referencedColumnName = "contactId")
     private ContactInfo contactInfo;
 
-    public  ShipmentDetails() {}
+    public  ShipmentDetails() {
+        shippingStatus = ShippingStatus.PENDING;
+    }
 
-    public ShipmentDetails(UserDetails userDetails, String weight, String qty, FromAddress fromAddress, ToAddress toAddress, DeliveryMode modeOfDelivery, Double price, Tracking tracking, LabelCreation labelCreation, ContactInfo contactInfo) {
+    public ShipmentDetails(UserDetails userDetails, String weight, String qty, FromAddress fromAddress, ToAddress toAddress, DeliveryMode modeOfDelivery,ShippingStatus shippingStatus, Double price, Tracking tracking, LabelCreation labelCreation, ContactInfo contactInfo) {
         this.userDetails = userDetails;
         this.weight = weight;
         this.qty = qty;
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
         this.modeOfDelivery = modeOfDelivery;
+        this.shippingStatus = shippingStatus;
         this.price = price;
         this.tracking = tracking;
         this.labelCreation = labelCreation;

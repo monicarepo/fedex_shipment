@@ -158,6 +158,12 @@ public UserResponse updateUserRoles(@Argument Long id, @Argument List<GraphQLRol
         private String password;
         private Set<GraphQLRole> roles;
 
+        public SignUpInput(String username, String email, String password, Set<GraphQLRole> roles) {
+            this.username = username;
+            this.email = email;
+            this.password = password;
+            this.roles = roles;
+        }
     }
 
     @Getter

@@ -23,7 +23,7 @@ public class Member {
 
     private String phoneNumber;
 
-    private String membershipType;
+    private MembershipType membershipType;
 
     private java.sql.Date registrationDate;
 
@@ -31,7 +31,7 @@ public class Member {
 
     public  Member() {}
 
-    public Member(String fullName, String firstName, String lastName, String email, String phoneNumber, String membershipType, Date registrationDate, String status) {
+    public Member(String fullName, String firstName, String lastName, String email, String phoneNumber, MembershipType membershipType, Date registrationDate, String status) {
         this.fullName = fullName;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -42,3 +42,4 @@ public class Member {
         this.status = status;
     }
 }
+

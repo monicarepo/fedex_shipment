@@ -162,6 +162,7 @@ input ShipmentInput {
     fromAddress: FromAddressInput!
     toAddress: ToAddressInput!
     modeOfDelivery: DeliveryMode!
+    shippingStatus: ShippingStatus
     price: Float
     contactInfo: ContactInfoInput!
 }
@@ -222,6 +223,7 @@ type ShipmentDetailResponse {
     fromAddress: FromAddressType!
     toAddress: ToAddressType!
     modeOfDelivery: DeliveryMode!
+    shippingStatus: ShippingStatus!
     price: Float!
     tracking: TrackingType
     labelCreation: LabelCreationType
