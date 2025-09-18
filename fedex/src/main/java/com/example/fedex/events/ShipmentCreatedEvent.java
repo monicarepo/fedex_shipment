@@ -1,4 +1,4 @@
-package com.example.fedex.service;
+package com.example.fedex.events;
 
 import com.example.fedex.entity.shipment.ShipmentDetails;
 import lombok.Getter;

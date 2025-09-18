@@ -2,9 +2,10 @@ package com.example.fedex.service;
 
 import com.example.fedex.controller.ShipmentDetailsController;
 import com.example.fedex.entity.DeliveryMode;
-import com.example.fedex.entity.ShippingDetails;
 import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.entity.shipment.*;
+import com.example.fedex.events.ShipmentCreatedEvent;
+import com.example.fedex.events.ShipmentStatusUpdatedEvent;
 import com.example.fedex.repository.LabelCreationRepository;
 import com.example.fedex.repository.PricePlanDetailRepository;
 import com.example.fedex.repository.ShipmentDetailsRepository;
@@ -225,12 +226,24 @@ public class ShipmentDetailsService {
         existingShipment.setWeight(input.weight());
         existingShipment.setQty(input.qty());
         existingShipment.setModeOfDelivery(input.modeOfDelivery());
+        existingShipment.setShippingStatus(input.shippingStatus());
         existingShipment.setPrice(totalPrice);
 
         generateLabelAsync(existingShipment);
 
         return shipmentDetailsRepository.save(existingShipment);
     }
+
+    @Transactional
+    public ShipmentDetails updateShipmentStatus(Integer shipmentId, ShipmentDetailsController.ShipmentStatusInput input) {
+        ShipmentDetails existingShipment = shipmentDetailsRepository.findById(shipmentId)
+                .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + shipmentId));
+        existingShipment.setShippingStatus(input.shippingStatus());
+        ShipmentDetails updatedShipment = shipmentDetailsRepository.save(existingShipment);
+        applicationEventPublisher.publishEvent(new ShipmentStatusUpdatedEvent(updatedShipment));
+        return updatedShipment;
+    }
+
 
 //    Testing with static data
     public void testGenerateLabelAsyncWithStaticData() {

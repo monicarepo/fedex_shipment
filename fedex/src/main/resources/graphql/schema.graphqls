@@ -59,6 +59,7 @@ type Mutation {
 
 #    Event Streaming
     createTestMessage(message: String!): String!
+    updateShipmentStatus(shipmentId: Int, input: ShipmentStatusInput): ShipmentDetailResponse!
 }
 
 type LabelResponse {
@@ -69,6 +70,10 @@ type LabelResponse {
     fileSize: Int
     createdDate: String
     updatedDate: String
+}
+
+input ShipmentStatusInput {
+    shippingStatus: ShippingStatus!
 }
 
 

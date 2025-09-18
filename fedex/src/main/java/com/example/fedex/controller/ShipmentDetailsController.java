@@ -98,6 +98,15 @@ public class ShipmentDetailsController {
         return "Message sent";
     }
 
+    @MutationMapping
+    public ShipmentDetailResponse updateShipmentStatus(@Argument Integer shipmentId,@Argument ShipmentStatusInput input) {
+        ShipmentDetails updatedShipment = shipmentDetailsService.updateShipmentStatus(shipmentId, input);
+        return new ShipmentDetailResponse(updatedShipment);
+    }
+
+    public record ShipmentStatusInput(
+            ShippingStatus shippingStatus
+    ){}
 
     public record ShipmentInput(
             UserInput userDetails,
