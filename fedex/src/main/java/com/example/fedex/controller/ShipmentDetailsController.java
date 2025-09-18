@@ -4,6 +4,7 @@ import com.example.fedex.dto.LabelResponse;
 import com.example.fedex.dto.ShipmentDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.shipment.*;
+import com.example.fedex.service.Producer;
 import com.example.fedex.service.ShipmentDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -21,6 +22,9 @@ import java.util.stream.Collectors;
 public class ShipmentDetailsController {
     @Autowired
     private ShipmentDetailsService shipmentDetailsService;
+
+    @Autowired
+    private Producer producer;
 
     @MutationMapping
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
@@ -85,6 +89,12 @@ public class ShipmentDetailsController {
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving label: " + e.getMessage());
         }
+    }
+
+    @MutationMapping
+    public String createTestMessage(@Argument String message) {
+        producer.sendMessage(message);
+        return "Message sent";
     }
 
 

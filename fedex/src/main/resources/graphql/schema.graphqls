@@ -56,6 +56,9 @@ type Mutation {
     createPlanPriceDetails(input: PricePlanInput!): PricePlanResponse!
     updatePricePlanDetails(id: ID!, input: PricePlanInput!): PricePlanResponse!
     deletePricePlanDetails(id: Int!): Boolean!
+
+#    Event Streaming
+    createTestMessage(message: String!): String!
 }
 
 type LabelResponse {
@@ -124,7 +127,7 @@ input UserInput {
 }
 
 input FromAddressInput {
-    userId: Int!
+    userId: Int
     apt: String
     name: String!
     city: String!
@@ -133,7 +136,7 @@ input FromAddressInput {
 }
 
 input ToAddressInput {
-    userId: Int!
+    userId: Int
     apt: String
     name: String!
     city: String!
@@ -147,7 +150,7 @@ input TrackingInput {
 }
 
 input ContactInfoInput {
-    userId: Int!
+    userId: Int
     phoneNumber: String!
     email: String!
 }
