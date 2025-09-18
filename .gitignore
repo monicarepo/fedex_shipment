@@ -3,3 +3,4 @@
 /fedex/build
 .DS_Store
 /fedex/generated-labels
+/fedex/.azure

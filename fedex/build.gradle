@@ -51,6 +51,9 @@ dependencies {
     implementation 'com.itextpdf:itext7-core:7.2.5'
     implementation 'com.itextpdf:html2pdf:4.0.5'
 
+    // Apache Kafka for event streaming
+    implementation 'org.springframework.kafka:spring-kafka'
+
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
