@@ -14,6 +14,9 @@ public class Producer {
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
 
+    @Autowired
+    private TwilioService twilioService;
+
     public void sendMessage(String message) {
         kafkaTemplate.send(TOPIC, message);
     }
@@ -22,6 +25,10 @@ public class Producer {
     public void handleShipmentStatusUpdatedEvent(ShipmentStatusUpdatedEvent shipmentStatusUpdatedEvent) {
         Long shippingId = shipmentStatusUpdatedEvent.getUpdatedShipment().getShipmentId();
         ShippingStatus shippingStatus = shipmentStatusUpdatedEvent.getUpdatedShipment().getShippingStatus();
+        String phoneNumber = shipmentStatusUpdatedEvent.getUpdatedShipment().getContactInfo().getPhoneNumber();
+        String name = shipmentStatusUpdatedEvent.getUpdatedShipment().getUserDetails().getFirstName() + " " + shipmentStatusUpdatedEvent.getUpdatedShipment().getUserDetails().getLastName();
+        String message = "Hi " + name + "Your shipping has been" + shippingStatus.name();
+        twilioService.sendSms(phoneNumber,message);
         sendMessage("shipment has been changed, shippingId: " + shippingId + " with status " + shippingStatus);
     }
 }
