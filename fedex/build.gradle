@@ -54,8 +54,11 @@ dependencies {
     // Apache Kafka for event streaming
     implementation 'org.springframework.kafka:spring-kafka'
 
-    // For send sms to user
+    // For send sms to user -> Twilio
     implementation 'com.twilio.sdk:twilio:10.9.2'
+
+    // Vonage
+    implementation 'com.vonage:client:7.8.0'
 
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

@@ -17,6 +17,9 @@ public class Producer {
     @Autowired
     private TwilioService twilioService;
 
+    @Autowired
+    private VonageService vonageService;
+
     public void sendMessage(String message) {
         kafkaTemplate.send(TOPIC, message);
     }
@@ -27,8 +30,9 @@ public class Producer {
         ShippingStatus shippingStatus = shipmentStatusUpdatedEvent.getUpdatedShipment().getShippingStatus();
         String phoneNumber = shipmentStatusUpdatedEvent.getUpdatedShipment().getContactInfo().getPhoneNumber();
         String name = shipmentStatusUpdatedEvent.getUpdatedShipment().getUserDetails().getFirstName() + " " + shipmentStatusUpdatedEvent.getUpdatedShipment().getUserDetails().getLastName();
-        String message = "Hi " + name + "Your shipping has been" + shippingStatus.name();
-        twilioService.sendSms(phoneNumber,message);
+        String message = "Hi " + name + " Your shipping has been " + shippingStatus.name();
+//        twilioService.sendSms(phoneNumber,message);
+        vonageService.sendSms(phoneNumber,message);
         sendMessage("shipment has been changed, shippingId: " + shippingId + " with status " + shippingStatus);
     }
 }
