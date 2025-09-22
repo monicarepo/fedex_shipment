@@ -2,12 +2,14 @@ package com.example.fedex.entity.shipment;
 
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "shipment_details")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ShipmentDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

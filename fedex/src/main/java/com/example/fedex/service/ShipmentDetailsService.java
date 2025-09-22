@@ -1,6 +1,7 @@
 package com.example.fedex.service;
 
 import com.example.fedex.controller.ShipmentDetailsController;
+import com.example.fedex.dto.ShippingDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.entity.shipment.*;
@@ -14,6 +15,10 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -47,13 +52,29 @@ public class ShipmentDetailsService {
         this.userDetailRepository = userDetailRepository;
     }
 
+    @Cacheable(value = "pricePlans", key = "'weight:' + #weightInGrams")
+    public Optional<PlanPriceDetails> getPriceForWeight(int weightInGrams) {
+        return planPriceDetailsRepository.findPriceForWeight(1, weightInGrams);
+    }
+
     @Transactional
+    @Caching(
+        evict = {
+            @CacheEvict(value = "shipmentDetailsAll", allEntries = true),
+            @CacheEvict(value = "userShipments", allEntries = true)
+        },
+        put = {
+            @CachePut(value = "shipmentDetails", key = "'shipment:' + #result.shipmentId", condition = "#result != null")
+        }
+    )
     public ShipmentDetails createShipment(ShipmentDetailsController.ShipmentInput input) {
         int weightInGrams = Integer.parseInt(input.weight().replace("g", ""));
         int qty = Integer.parseInt(input.qty());
 
-        PlanPriceDetails pricePlan = planPriceDetailsRepository
-                .findPriceForWeight(1, weightInGrams)
+//        PlanPriceDetails pricePlan = planPriceDetailsRepository
+//                .findPriceForWeight(1, weightInGrams)
+//                .orElseThrow(() -> new RuntimeException("No price found for given weight"));
+        PlanPriceDetails pricePlan = getPriceForWeight(weightInGrams)
                 .orElseThrow(() -> new RuntimeException("No price found for given weight"));
 
         double totalPrice = pricePlan.getPrice() * qty;
@@ -128,6 +149,9 @@ public class ShipmentDetailsService {
     }
 
     @Async
+    @Caching(evict = {
+        @CacheEvict(value = "shipmentDetails", key = "'shipment:' + #shipment.shipmentId")
+    })
     public void generateLabelAsync(ShipmentDetails shipment) {
         try {
             LabelCreation generatedLabel = labelGenerationService.generateAndSaveLabel(shipment);
@@ -148,14 +172,31 @@ public class ShipmentDetailsService {
         return labelGenerationService.generateAndSaveLabel(shipment);
     }
 
+    @Cacheable(value = "shipmentDetailsAll", key = "'allShipments'")
     public List<ShipmentDetails> getAllShipments() {
         return shipmentDetailsRepository.findAll();
     }
 
+    @Cacheable(value = "userShipments", key = "'user:' + #userId")
+    public List<ShipmentDetails> getShipmentsByUserId(Long userId) {
+        return shipmentDetailsRepository.findByUserDetails_UserId(userId);
+    }
+
+    @Cacheable(value = "shipmentDetails", key = "'shipment:' + #shipmentId")
     public Optional<ShipmentDetails> getShipmentDetails(Integer shipmentId) {
         return shipmentDetailsRepository.findByShipmentId(shipmentId);
     }
 
+    @Cacheable(value = "shipmentDetails", key = "'tracking:' + #trackingNumber")
+    public Optional<ShipmentDetails> getShipmentDetailsByTrackingNumber(String trackingNumber) {
+        return shipmentDetailsRepository.findByTrackingNumber(trackingNumber);
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = "shipmentDetails", key = "'shipment:' + #shipmentId"),
+            @CacheEvict(value = "shipmentDetailsAll", allEntries = true),
+            @CacheEvict(value = "userShipments", allEntries = true)
+    })
     public boolean deleteShipmentDetails(Integer shipmentId) {
         if (shipmentDetailsRepository.existsById(shipmentId)) {
             shipmentDetailsRepository.deleteById(shipmentId);
@@ -165,6 +206,9 @@ public class ShipmentDetailsService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "shipmentDetails", key = "'shipment:' + #shipmentId")
+    })
     public LabelCreation generateLabelForShipment(Integer shipmentId) {
         ShipmentDetails shipment = getShipmentDetails(shipmentId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + shipmentId));
@@ -176,11 +220,21 @@ public class ShipmentDetailsService {
     }
 
     @Transactional()
+    @Cacheable(value = "labels", key = "'label:' + #labelId")
     public LabelCreation getLabelWithContent(Long labelId) {
         return labelCreationRepository.findByIdWithContent(labelId)
                 .orElseThrow(() -> new RuntimeException("Label not found"));
     }
 
+    @Caching(
+        evict = {
+            @CacheEvict(value = "shipmentDetailsAll", allEntries = true),
+            @CacheEvict(value = "userShipments", allEntries = true)
+        },
+        put = {
+            @CachePut(value = "shipmentDetails", key = "'shipment:' + #shipmentId", condition = "#result != null")
+        }
+    )
     @Transactional
     public ShipmentDetails updateShipmentDetail(Integer shipmentId, ShipmentDetailsController.ShipmentInput input) {
         ShipmentDetails existingShipment = shipmentDetailsRepository.findById(shipmentId)
@@ -189,8 +243,11 @@ public class ShipmentDetailsService {
         int weightInGrams = Integer.parseInt(input.weight().replace("g", ""));
         int qty = Integer.parseInt(input.qty());
 
-        PlanPriceDetails pricePlan = planPriceDetailsRepository
-                .findPriceForWeight(1, weightInGrams)
+//        PlanPriceDetails pricePlan = planPriceDetailsRepository
+//                .findPriceForWeight(1, weightInGrams)
+//                .orElseThrow(() -> new RuntimeException("No price found for given weight"));
+
+        PlanPriceDetails pricePlan = getPriceForWeight(weightInGrams)
                 .orElseThrow(() -> new RuntimeException("No price found for given weight"));
 
         double totalPrice = pricePlan.getPrice() * qty;
@@ -235,6 +292,15 @@ public class ShipmentDetailsService {
     }
 
     @Transactional
+    @Caching(
+        evict = {
+            @CacheEvict(value = "shipmentDetailsAll", allEntries = true),
+            @CacheEvict(value = "userShipments", allEntries = true)
+        },
+        put = {
+            @CachePut(value = "shipmentDetails", key = "'shipment:' + #shipmentId", condition = "#result != null")
+        }
+    )
     public ShipmentDetails updateShipmentStatus(Integer shipmentId, ShipmentDetailsController.ShipmentStatusInput input) {
         ShipmentDetails existingShipment = shipmentDetailsRepository.findById(shipmentId)
                 .orElseThrow(() -> new RuntimeException("Shipment not found with id: " + shipmentId));

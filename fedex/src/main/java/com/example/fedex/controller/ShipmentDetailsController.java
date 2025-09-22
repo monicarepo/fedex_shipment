@@ -2,6 +2,7 @@ package com.example.fedex.controller;
 
 import com.example.fedex.dto.LabelResponse;
 import com.example.fedex.dto.ShipmentDetailResponse;
+import com.example.fedex.dto.ShippingDetailResponse;
 import com.example.fedex.entity.DeliveryMode;
 import com.example.fedex.entity.ShippingStatus;
 import com.example.fedex.entity.shipment.*;
@@ -46,6 +47,12 @@ public class ShipmentDetailsController {
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public Optional<ShipmentDetailResponse> getShipmentById(@Argument Integer id){
         return shipmentDetailsService.getShipmentDetails(id).map(ShipmentDetailResponse::new);
+    }
+
+    @QueryMapping
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public Optional<ShipmentDetailResponse> shipmentDetailsByTrackingNumber(@Argument String trackingNumber) {
+        return shipmentDetailsService.getShipmentDetailsByTrackingNumber(trackingNumber).map(ShipmentDetailResponse::new);
     }
 
     @MutationMapping

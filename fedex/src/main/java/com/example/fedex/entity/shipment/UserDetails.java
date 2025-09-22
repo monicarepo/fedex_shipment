@@ -1,11 +1,13 @@
 package com.example.fedex.entity.shipment;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
 @Entity
 @Table(name = "user_details")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

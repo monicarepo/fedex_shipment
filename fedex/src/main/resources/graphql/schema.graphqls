@@ -28,6 +28,7 @@ type Query {
     # Shipment Details Given Formate
     getShipmentById(id: ID!): ShipmentDetailResponse
     getAllShipments: [ShipmentDetailResponse]!
+    shipmentDetailsByTrackingNumber(trackingNumber: String!): ShipmentDetailResponse
 
     # PricePlan Details
     allPricePlanDetails: [PricePlanResponse]!
